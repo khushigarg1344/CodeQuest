@@ -1,0 +1,729 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#11131b" />
+  <meta name="description" content="CodeQuest — gamified coding and DSA learning." />
+  <title>CodeQuest — Level up your coding</title>
+  <link rel="stylesheet" href="/src/style.css" />
+
+  <style>
+    .editor-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 14px 0;
+    }
+
+    .ai-tutor-button {
+      background: #7654bd;
+      color: white;
+      border: 1px solid #9a78ed;
+      border-radius: 9px;
+      padding: 12px 18px;
+      font-size: 14px;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    .ai-tutor-button:hover {
+      background: #6845b0;
+    }
+
+    .ai-tutor-button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
+    .ai-tutor-panel {
+      margin-top: 16px;
+      padding: 18px;
+      border: 1px solid #7654bd;
+      border-radius: 12px;
+      background: rgba(118, 84, 189, 0.09);
+    }
+
+    .ai-tutor-panel h3 {
+      color: #b99cff;
+      margin-top: 0;
+    }
+
+    .ai-tutor-response {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      line-height: 1.7;
+      font-family: inherit;
+      font-size: 14px;
+    }
+
+    .ai-tutor-panel[hidden] {
+      display: none;
+    }
+
+    /* AI TUTOR CHAT */
+
+    .ai-chat-area {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid rgba(185, 156, 255, 0.2);
+    }
+
+    .ai-chat-area label {
+      display: block;
+      margin-bottom: 9px;
+      color: #d8c9ff;
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .ai-question-input {
+      display: block;
+      width: 100%;
+      min-height: 90px;
+      resize: vertical;
+      box-sizing: border-box;
+      padding: 13px;
+      border: 1px solid #51436f;
+      border-radius: 9px;
+      outline: none;
+      background: #171522;
+      color: #ffffff;
+      font-family: inherit;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .ai-question-input:focus {
+      border-color: #9a78ed;
+      box-shadow: 0 0 0 2px rgba(154, 120, 237, 0.15);
+    }
+
+    .ai-question-input::placeholder {
+      color: #91899f;
+    }
+
+    .ai-chat-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 10px;
+    }
+
+    .ai-send-button {
+      background: #7654bd;
+      color: white;
+      border: 1px solid #9a78ed;
+      border-radius: 9px;
+      padding: 11px 18px;
+      font-size: 14px;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    .ai-send-button:hover {
+      background: #6845b0;
+    }
+
+    .ai-send-button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
+    .ai-chat-history {
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+      margin-top: 18px;
+    }
+
+    .ai-chat-message {
+      padding: 13px;
+      border-radius: 10px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    .ai-chat-message.user {
+      background: rgba(118, 84, 189, 0.2);
+      border: 1px solid rgba(154, 120, 237, 0.35);
+    }
+
+    .ai-chat-message.assistant {
+      background: rgba(255, 255, 255, 0.045);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .ai-chat-message strong {
+      display: block;
+      margin-bottom: 6px;
+      color: #c8adff;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="app-shell">
+
+    <aside class="sidebar">
+
+      <a class="brand" href="#overview">
+        <span class="brand-mark">&lt;/&gt;</span>
+        <span>codequest</span>
+      </a>
+
+      <div class="profile-mini">
+        <div class="avatar">CQ</div>
+        <div>
+          <strong id="profile-name">Code Explorer</strong>
+          <span id="profile-level">Level 01 · Beginner</span>
+        </div>
+      </div>
+
+      <p class="side-label">YOUR SPACE</p>
+
+      <nav class="main-nav" aria-label="Main navigation">
+        <button class="nav-item active" data-view="overview">
+          ▦ <span>Overview</span>
+        </button>
+
+        <button class="nav-item" data-view="challenges">
+          ⌘ <span>Challenges</span>
+          <span class="nav-count">3</span>
+        </button>
+
+        <button class="nav-item" data-view="learning">
+          ▤ <span>Learning paths</span>
+        </button>
+
+        <button class="nav-item" data-view="leaderboard">
+          ♜ <span>Leaderboard</span>
+        </button>
+      </nav>
+
+      <p class="side-label path-label">CURRENT PATH</p>
+
+      <div class="path-chip">
+        <div class="path-icon">⌘</div>
+        <div>
+          <strong>Python foundations</strong>
+          <span>Start your first quest</span>
+        </div>
+        <span>›</span>
+      </div>
+
+      <div class="sidebar-bottom">
+
+        <div class="streak-side">
+          <span>♨</span>
+          <div>
+            <strong id="side-streak">Start a streak</strong>
+            <span>Practice a little each day</span>
+          </div>
+        </div>
+
+        <div class="side-divider"></div>
+
+        <button class="nav-item" id="account-button">
+          ♙ <span>Account / API status</span>
+        </button>
+
+      </div>
+    </aside>
+
+    <main class="content">
+
+      <header class="topbar">
+
+        <div class="breadcrumbs">
+          <span>My space</span>
+          <span>›</span>
+          <strong id="breadcrumb-current">Overview</strong>
+        </div>
+
+        <div class="top-actions">
+
+          <label class="search-button">
+            ⌕
+            <input
+              id="search-input"
+              placeholder="Search problems"
+              aria-label="Search problems"
+            />
+          </label>
+
+          <span class="api-status" id="api-status">
+            <i></i> Connecting
+          </span>
+
+        </div>
+      </header>
+
+      <div class="page-wrap">
+
+        <section class="welcome-row">
+
+          <div>
+            <p class="eyebrow" id="today-label">
+              YOUR CODING JOURNEY
+            </p>
+
+            <h1>
+              Welcome to CodeQuest<span class="period">.</span>
+            </h1>
+
+            <p class="welcome-copy">
+              Learn DSA, solve challenges, and earn XP as you improve.
+            </p>
+          </div>
+
+          <div class="level-card">
+
+            <div class="level-top">
+              <span id="level-label">LEVEL 01</span>
+
+              <span>
+                <b id="xp-value">0</b> /
+                <span id="xp-next">100</span> XP
+              </span>
+            </div>
+
+            <div class="level-track">
+              <span id="xp-progress"></span>
+            </div>
+
+            <div class="level-bottom">
+              <span id="rank-label">Beginner</span>
+              <span id="next-rank">Level 02 →</span>
+            </div>
+
+          </div>
+        </section>
+
+        <section class="stats-grid">
+
+          <article class="stat-card">
+            <div class="stat-icon lime">⚡</div>
+            <p>Total XP</p>
+            <strong id="stat-xp">0</strong>
+            <small>Earn XP by solving problems</small>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-icon peach">♨</div>
+            <p>Current streak</p>
+            <strong id="stat-streak">0 days</strong>
+            <small>Consistency builds skill</small>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-icon sky">✓</div>
+            <p>Problems solved</p>
+            <strong id="stat-solved">0</strong>
+            <small>Keep progressing</small>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-icon violet">♜</div>
+            <p>Badges earned</p>
+            <strong id="stat-badges">0</strong>
+            <small>Milestones coming soon</small>
+          </article>
+
+        </section>
+
+        <section class="main-grid">
+
+          <div class="left-column">
+
+            <div class="section-heading">
+
+              <div>
+                <p class="eyebrow">YOUR NEXT MOVE</p>
+                <h2>DSA practice</h2>
+              </div>
+
+              <button class="text-button" id="refresh-problems">
+                Refresh problems ↻
+              </button>
+
+            </div>
+
+            <div class="problem-list" id="problem-list">
+              <div class="empty-state">
+                Loading problems from your CodeQuest API…
+              </div>
+            </div>
+
+            <div class="section-heading learning-heading">
+              <div>
+                <p class="eyebrow">KEEP EXPLORING</p>
+                <h2>Learning paths</h2>
+              </div>
+            </div>
+
+            <div class="path-grid">
+
+              <article class="learning-card">
+
+                <div class="learning-icon python-icon">Py</div>
+
+                <div class="learning-meta">
+                  <span>BEGINNER · 6 MODULES</span>
+                  <h3>Python Foundations</h3>
+                  <p>
+                    Build confidence with variables, loops, functions, and lists.
+                  </p>
+                </div>
+
+                <div class="learning-bottom">
+                  <span>Learning path</span>
+                  <span>Coming next →</span>
+                </div>
+
+              </article>
+
+              <article class="learning-card">
+
+                <div class="learning-icon dsa-icon">⌘</div>
+
+                <div class="learning-meta">
+                  <span>BEGINNER TO ADVANCED</span>
+                  <h3>Data Structures & Algorithms</h3>
+                  <p>
+                    Practice arrays, strings, stacks, trees, graphs, and more.
+                  </p>
+                </div>
+
+                <div class="learning-bottom">
+                  <span>Practice track</span>
+                  <span>Explore →</span>
+                </div>
+
+              </article>
+
+            </div>
+          </div>
+
+          <aside class="right-column">
+
+            <section class="daily-card">
+
+  <div class="daily-header">
+    <div>
+      <p class="eyebrow">DAILY CHALLENGE</p>
+      <h2 id="daily-title">Loading today's challenge...</h2>
+    </div>
+
+    <span id="daily-difficulty" class="difficulty easy">
+      EASY
+    </span>
+  </div>
+
+  <p id="daily-meta" class="daily-description">
+    Fetching today's DSA question...
+  </p>
+
+  <p id="daily-description" class="daily-description">
+    Please wait while your challenge loads.
+  </p>
+
+  <button
+    type="button"
+    class="primary-button"
+    id="solve-daily-challenge"
+    disabled>
+    Loading challenge...
+  </button>
+
+  <p
+    id="daily-feedback"
+    class="challenge-feedback"
+    aria-live="polite">
+  </p>
+
+</section>
+
+            <section class="leaderboard-card">
+
+              <div class="section-heading">
+
+                <div>
+                  <p class="eyebrow">COMMUNITY</p>
+                  <h2>Leaderboard</h2>
+                </div>
+
+                <span class="leaderboard-mark">♜</span>
+
+              </div>
+
+              <div class="leader-row">
+                <span class="leader-rank">1</span>
+                <span class="leader-avatar">AL</span>
+                <span class="leader-name">
+                  <strong>Alex</strong>
+                  <small>Array Ace</small>
+                </span>
+                <strong>1,240 XP</strong>
+              </div>
+
+              <div class="leader-row">
+                <span class="leader-rank">2</span>
+                <span class="leader-avatar alt">SK</span>
+                <span class="leader-name">
+                  <strong>Sam</strong>
+                  <small>Bug Hunter</small>
+                </span>
+                <strong>980 XP</strong>
+              </div>
+
+              <div class="leader-row current">
+                <span class="leader-rank">—</span>
+                <span class="leader-avatar you">CQ</span>
+                <span class="leader-name">
+                  <strong>You</strong>
+                  <small>Your journey</small>
+                </span>
+                <strong id="leader-xp">0 XP</strong>
+              </div>
+
+              <p class="demo-note">
+                Sample leaderboard · live rankings will be added later.
+              </p>
+
+            </section>
+
+            <section class="api-card">
+              <h3>Backend connection</h3>
+              <p id="api-detail">Checking FastAPI status…</p>
+              <a
+                href="http://127.0.0.1:8000/docs"
+                target="_blank"
+                rel="noreferrer">
+                Open API documentation ↗
+              </a>
+            </section>
+
+          </aside>
+        </section>
+
+        <footer class="footer-note">
+          <span>
+            Small steps. Strong algorithms.
+            <strong>Keep questing.</strong>
+          </span>
+          <span>CodeQuest · Built for curious minds</span>
+        </footer>
+
+      </div>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- ACCOUNT DIALOG -->
+
+  <dialog id="account-dialog" class="problem-dialog account-dialog">
+
+    <form id="account-form">
+
+      <button
+        type="button"
+        class="dialog-close"
+        id="close-account"
+        aria-label="Close">
+        ×
+      </button>
+
+      <p class="eyebrow">YOUR CODEQUEST ACCOUNT</p>
+
+      <h2 id="account-title">Log in</h2>
+
+      <p id="account-subtitle" class="account-subtitle">
+        Log in to save your XP and progress.
+      </p>
+
+      <label class="account-field" id="name-field">
+        Name
+        <input
+          id="account-name"
+          name="name"
+          autocomplete="name"
+          minlength="2"
+          maxlength="100"
+        />
+      </label>
+
+      <label class="account-field">
+        Email
+        <input
+          id="account-email"
+          name="email"
+          type="email"
+          autocomplete="email"
+          required
+        />
+      </label>
+
+      <label class="account-field">
+        Password
+        <input
+          id="account-password"
+          name="password"
+          type="password"
+          autocomplete="current-password"
+          minlength="8"
+          required
+        />
+      </label>
+
+      <p id="account-error" class="account-error" role="alert"></p>
+
+      <button
+        class="primary-button account-submit"
+        type="submit"
+        id="account-submit">
+        Log in
+      </button>
+
+      <button
+        class="account-switch"
+        type="button"
+        id="account-switch">
+        New here? Create an account
+      </button>
+
+    </form>
+  </dialog>
+
+  <!-- CODING PROBLEM DIALOG -->
+
+  <dialog id="problem-dialog" class="problem-dialog">
+
+    <form method="dialog">
+      <button class="dialog-close" aria-label="Close">×</button>
+    </form>
+
+    <p class="eyebrow" id="dialog-topic">CODING CHALLENGE</p>
+
+    <h2 id="dialog-title">Problem title</h2>
+
+    <span id="dialog-difficulty" class="difficulty easy">EASY</span>
+
+    <p id="dialog-description"></p>
+
+    <div class="sample-box">
+      <strong>Sample input</strong>
+      <pre id="dialog-input"></pre>
+
+      <strong>Sample output</strong>
+      <pre id="dialog-output"></pre>
+    </div>
+
+    <div class="editor-heading">
+
+      <label for="language-select">Programming language</label>
+
+      <select id="language-select">
+        <option value="python">Python</option>
+        <option value="java">Java</option>
+        <option value="cpp">C++</option>
+      </select>
+
+    </div>
+
+    <label class="editor-label" for="code-editor">
+      Write your code
+    </label>
+
+    <textarea id="code-editor" spellcheck="false"></textarea>
+
+    <!-- RUN CODE AND AI TUTOR BUTTONS -->
+
+    <div class="editor-actions">
+
+      <button
+        class="primary-button"
+        id="run-code"
+        type="button">
+        ▶ Run Code
+      </button>
+
+      <button
+        class="ai-tutor-button"
+        id="ask-ai-tutor"
+        type="button">
+        ✦ Ask AI Tutor
+      </button>
+
+    </div>
+
+    <!-- JUDGE0 RESULT -->
+
+    <div
+      id="run-result"
+      class="run-result"
+      aria-live="polite">
+      Your output and test-case results will appear here.
+    </div>
+
+    <!-- AI TUTOR RESPONSE AND CHAT -->
+
+    <section
+      id="ai-tutor-panel"
+      class="ai-tutor-panel"
+      aria-live="polite"
+      hidden>
+
+      <h3>✦ CodeQuest AI Tutor</h3>
+
+      <!-- Automatic code analysis appears here -->
+      <pre
+        id="ai-tutor-response"
+        class="ai-tutor-response"></pre>
+
+      <!-- Ask your own question -->
+
+      <div class="ai-chat-area">
+
+        <label for="ai-question-input">
+          Ask your own question
+        </label>
+
+        <textarea
+          id="ai-question-input"
+          class="ai-question-input"
+          placeholder="Ask anything about your code, DSA concepts, errors, time complexity..."
+          maxlength="2000"></textarea>
+
+        <div class="ai-chat-actions">
+
+          <button
+            type="button"
+            id="ai-send-question"
+            class="ai-send-button">
+            ✦ Ask Question
+          </button>
+
+        </div>
+
+        <!-- Previous questions and AI answers appear here -->
+
+        <div
+          id="ai-chat-history"
+          class="ai-chat-history"
+          aria-live="polite">
+        </div>
+
+      </div>
+
+    </section>
+
+  </dialog>
+
+  <script type="module" src="/src/main.js"></script>
+
+</body>
+</html>
